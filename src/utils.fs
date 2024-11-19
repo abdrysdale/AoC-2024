@@ -2,43 +2,72 @@
 
 \ General
 : 2ROT ( a b c -- c a b) ROT ROT ;
-: CLEAR ( n1 ... nN -- ) DEPTH 0 DO DROP LOOP ;
-: VIEW-STACK ( -- )
-    DEPTH 0 = IF
+
+\ *** Whole stack manipulation *** /
+\ Clears the stack
+: .C ( n1 ... nN -- ) DEPTH 0 DO DROP LOOP ;
+\ Views the stack with indexes
+: .V ( -- )
+    DEPTH 0= IF
         CR ." Stack empty."
     ELSE
         DEPTH 0 DO
             CR i . ." : " i PICK .
         LOOP
     THEN ;
+\ Views the stack with the indexes if PICK was run next.
+: .P ( -- )
+    DEPTH 0= IF
+        CR ." Stack empty."
+    ELSE
+        DEPTH 0 DO
+            i 0= IF
+                CR ." ** " i PICK . ." PICK ( " DUP 1 + PICK . ." ) **"
+            ELSE
+                CR i 1 - . ." : " i PICK .
+            THEN
+        LOOP
+    THEN ;
+\ Views the stack with debugging information
+: .D ( -- ) CR ." -- " R@ . ." --" CR .V ;
 
-\ Indicies
-: ** ( n -- n*n ) DUP * ;
-: ^ ( n1 n2 -- n1^n2 ) OVER 2ROT 1 DO DUP ROT * SWAP LOOP DROP ;
+\ *** Indicies *** /
+: ** ( n -- n ) DUP * ;
+: ^ ( n1 n2 -- n3 ) OVER 2ROT 1 DO DUP ROT * SWAP LOOP DROP ;
 
-\ Sumative and Cumulative
+\ *** Sumative and Cumulative *** /
 : SUM ( n1 n2 ... nN N -- n1+n2+...nN) 1 DO + LOOP ;
 : PROD ( n1 n2 ... nN N -- n1*n2*...nN) 1 DO * LOOP ;
-: BINOM ( n -- BINOM_COEF n ) 1 1 2ROT DO i 1 + + LOOP ;
-: ! ( n -- n! ) 1 1 2ROT DO i 1 + * LOOP ;
+: BINOM ( n -- n ) 1 1 2ROT DO i 1 + + LOOP ;
+: ! ( n -- n ) 1 1 2ROT DO i 1 + * LOOP ;
 
-\ Sequences and Series
-: FIB ( n1 -- n2 )
+\ *** Sequences and Series *** /
+: FIB ( n -- n )
     DUP
-    2 < IF
+    2 < IF DUP
     ELSE 0 1 ROT 1 DO
             DUP ROT +
         LOOP
-    THEN ;
+    THEN SWAP DROP ;
 
-\ Vector operations
-: VADD-NODROP ( n1 ... nN n1 ... nN N -- n1 .. nN N )
+\ *** Vector operations *** /
+ : VADD ( n1 ... nN n1 ... nN N -- n1 .. nN N )
     DUP 0 DO 
         DUP 2 * PICK SWAP DUP 1 + PICK ROT + SWAP
-    LOOP ;
-: VADD ( n1 ... nN n1 ... nN N -- n1 .. nN ) VADD DROP ;
-: DOT ( n1 ... nN n1 .. nN N -- n ) VADD-NODROP SUM ;
+    LOOP
+    \ Removes the input vectors from the stack
+    \ DO keeps the limit and index on the return stack
+    \ So we need to take those off before we can 
+    DUP 0 DO SWAP R> R> ROT >R >R >R LOOP
+    DUP 2 * 0 DO SWAP DROP LOOP
+    DUP 0 DO R> R> R> 2ROT >R >R SWAP LOOP ;
+: v+ ( n1 ... nN n1 ... nN N -- n1 .. nN ) VADD DROP ;
+: v. ( n1 ... nN n1 .. nN N -- n ) VADD SUM ;
 
-\ Constants
-355e 113e f/ fCONSTANT Pi
-271801e 99990e f/ fCONSTANT E
+\ *** Multiply by Constants *** /
+: PI ( n -- n ) 355 113 */ ;
+: sqrt2 ( n -- n ) 19601 13860 */ ;
+: sqrt3 ( n -- n ) 18817 10864 */ ;
+: e ( n -- n ) 28667 10546 */ ;
+: log2 ( n -- n ) 2040 11103 */ ;
+: ln2 ( n -- n ) 485 11464 */ ;
