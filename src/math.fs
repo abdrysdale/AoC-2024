@@ -26,21 +26,41 @@ INCLUDE utils.fs
 \ *** Vector operations *** /
  : VADD ( n1 ... nN n1 ... nN N -- n1 .. nN N )
     DUP 0 DO 
-        DUP 2 * PICK SWAP DUP 1 + PICK ROT + SWAP
+        DUP 2* PICK SWAP DUP 1 + PICK ROT + SWAP
     LOOP
     \ Removes the input vectors from the stack
     \ DO keeps the limit and index on the return stack
     \ So we need to take those off before we can 
     DUP 0 DO SWAP R> R> ROT >R >R >R LOOP
-    DUP 2 * 0 DO SWAP DROP LOOP
+    DUP 2* 0 DO SWAP DROP LOOP
     DUP 0 DO R> R> R> 2ROT >R >R SWAP LOOP ;
 : v+ ( n1 ... nN n1 ... nN N -- n1 .. nN ) VADD DROP ;
 : v. ( n1 ... nN n1 .. nN N -- n ) VADD SUM ;
 
-\ *** Multiply by Constants *** /
-: PI ( n -- n ) 355 113 */ ;
-: sqrt2 ( n -- n ) 19601 13860 */ ;
-: sqrt3 ( n -- n ) 18817 10864 */ ;
-: e ( n -- n ) 28667 10546 */ ;
-: log2 ( n -- n ) 2040 11103 */ ;
-: ln2 ( n -- n ) 485 11464 */ ;
+\ *** Constants ***
+\ I define non-integer constants as numerator/ /denominator
+\ this might help concatenation of multiple constants
+
+355 CONSTANT PI/
+113 CONSTANT /PI
+: PI ( n -- n ) PI/ /PI */ ;
+
+28667 CONSTANT e/
+10546 CONSTANT /e
+: e ( n -- n ) e/ /e */ ;
+
+19601 CONSTANT sqrt2/
+13860 CONSTANT /sqrt2
+: sqrt2 ( n -- n ) sqrt2/ /sqrt2  */ ;
+
+18817 CONSTANT sqrt3/
+10864 CONSTANT /sqrt3
+: sqrt3 ( n -- n ) sqrt3/ /sqrt3 */ ;
+
+2040 CONSTANT log2/
+11103 CONSTANT /log2
+: log2 ( n -- n ) log2/ /log2 */ ;
+
+485 CONSTANT ln2/
+11464 CONSTANT /ln2
+: ln2 ( n -- n ) ln2/ /ln2 */ ;
