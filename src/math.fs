@@ -3,16 +3,16 @@ INCLUDE utils.fs
 
 \ *** Indicies *** /
 : ** ( n -- n ) DUP * ;
-: ^ ( n1 n2 -- n3 ) OVER 2ROT 1 DO DUP ROT * SWAP LOOP DROP ;
+: ^ ( n1 n2 -- n ) OVER 2ROT 1 DO DUP ROT * SWAP LOOP DROP ;
 
 \ *** Sumative and Cumulative *** /
-: SUM ( n1 n2 ... nN N -- n1+n2+...nN) 1 DO + LOOP ;
-: PROD ( n1 n2 ... nN N -- n1*n2*...nN) 1 DO * LOOP ;
+: SUM ( n1 n2 ... nN N -- n ) 1 DO + LOOP ;
+: PROD ( n1 n2 ... nN N -- n ) 1 DO * LOOP ;
 : BINOM ( n -- n ) 1 1 2ROT DO i 1 + + LOOP ;
-: ! ( n -- n ) 1 1 2ROT DO i 1 + * LOOP ;
+: FACT ( n -- n ) 1 1 2ROT DO i 1 + * LOOP ;
 
 \ *** Statistics *** /
-: MEAN ( n1 n2 ... nN N ... n ) DUP >R SUM R> / ;
+: MEAN ( n1 n2 ... nN N -- n ) DUP >R SUM R> / ;
 
 \ *** Sequences and Series *** /
 : FIB ( n -- n )
