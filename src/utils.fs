@@ -32,7 +32,7 @@
 : .D ( -- ) CR ." -- " R@ . ." --" CR .V ;
 
 \ *** String *** /
-: NOSPACE ( -- ) 0 <# #s #> TYPE ;
+: NOSPACE ( n -- ) 0 <# #s #> TYPE ;
 
 \ *** Date and Time *** /
 : NOW ( -- ) time&date 2 0 DO NOSPACE ." /" LOOP . 2 0 DO NOSPACE ." :" LOOP . ;

@@ -23,19 +23,20 @@ INCLUDE utils.fs
         LOOP
     THEN SWAP DROP ;
 
+\ *** Array operations *** /
+: -> ( n addr idx# -- ) CELLS + ! ;
+: <- ( addr idx# -- n ) CELLS + @ ;
+
 \ *** Vector operations *** /
- : VADD ( n1 ... nN n1 ... nN N -- n1 .. nN N )
-    DUP 0 DO 
-        DUP 2* PICK SWAP DUP 1 + PICK ROT + SWAP
-    LOOP
-    \ Removes the input vectors from the stack
-    \ DO keeps the limit and index on the return stack
-    \ So we need to take those off before we can 
-    DUP 0 DO SWAP R> R> ROT >R >R >R LOOP
-    DUP 2* 0 DO SWAP DROP LOOP
-    DUP 0 DO R> R> R> 2ROT >R >R SWAP LOOP ;
-: v+ ( n1 ... nN n1 ... nN N -- n1 .. nN ) VADD DROP ;
-: v. ( n1 ... nN n1 .. nN N -- n ) VADD SUM ;
+VARIABLE N
+VARIABLE v+ADDR1
+VARIABLE v+ADDR2
+VARIABLE v+ADDR3
+: v+ ( addr1 addr2 N -- addr3)
+    N ! v+ADDR2 ! v+ADDR1 ! v+ADDR3 N @ 1 - CELLS ALLOT DROP
+    N @ 0 DO v+ADDR1 @ i <- v+ADDR2 @ i <- + v+ADDR3 i -> LOOP v+ADDR3 ;
+VARIABLE v.ADDR
+: v. ( addr1 addr2 N -- n ) DUP N ! v+ v.ADDR ! 0 N @ 0 DO v.ADDR @ i <- + LOOP ;
 
 \ *** Constants ***
 \ I define non-integer constants as numerator/ /denominator
