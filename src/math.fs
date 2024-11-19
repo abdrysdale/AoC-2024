@@ -40,7 +40,7 @@ INCLUDE utils.fs
 \ *** Constants ***
 \ I define non-integer constants as numerator/ /denominator
 \ this might help concatenation of multiple constants
-
+\ it's also helpful to have a word for the constant multiplied by something
 355 CONSTANT PI/
 113 CONSTANT /PI
 : PI ( n -- n ) PI/ /PI */ ;
