@@ -29,8 +29,7 @@ INCLUDE utils.fs
 
 \ *** Vector operations *** /
 : v+ ( addr1 addr2 addr3 N -- addr3) { ADDR1 ADDR2 ADDR3 N }
-    ADDR3 N 1 - CELLS ALLOT
-    N 0 DO ADDR1 i GET ADDR2 i GET + ADDR3 i PUT LOOP ;
+    ADDR3 N 1 - CELLS ALLOT N 0 DO ADDR1 i GET ADDR2 i GET + ADDR3 i PUT LOOP ;
 : v. ( addr1 addr2 addr3 N -- n ) { ADDR3 N }
     ADDR3 N v+ DROP 0 N 0 DO ADDR3 i GET + LOOP ;
 
