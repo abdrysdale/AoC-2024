@@ -3,7 +3,21 @@ include utils.fs
 
 \ *** indicies *** /
 : ** ( n -- n ) dup * ;
-: ^ ( n1 n2 -- n ) over 2rot 1 do dup rot * swap loop drop ;
+: ^ ( n1 n2 -- n ) { n1 n2 }
+    n2 0= if 1 exit then n2 1 = if n1 exit then
+    n1 n2 1 do n1 * loop ;
+
+\ *** Characters *** /
+\ number aligining based on size - prints correct leading 
+: .na ( n1 n2 -- ) { n1 n2 }
+    10 n2 ^ n1 <= if exit then
+    n2 1 do 10 i ^ n1 > if ."  " then loop n1 . ;
+: .n4 ( n -- ) 4 .na ;
+: .n8 ( n -- ) 8 .na ;
+
+\ *** Indexing *** /
+: ++ ( addr -- ) 1 swap +! ;
+: 0! ( addr -- ) 0 swap ! ;
 
 \ *** sumative and cumulative *** /
 : sum ( n1 n2 ... nN N -- n ) 1 do + loop ;
