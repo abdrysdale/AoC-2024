@@ -24,19 +24,15 @@ INCLUDE utils.fs
     THEN SWAP DROP ;
 
 \ *** Array operations *** /
-: -> ( n addr idx# -- ) CELLS + ! ;
-: <- ( addr idx# -- n ) CELLS + @ ;
+: PUT ( n addr idx# -- ) CELLS + ! ;
+: GET ( addr idx# -- n ) CELLS + @ ;
 
 \ *** Vector operations *** /
-VARIABLE N
-VARIABLE v+ADDR1
-VARIABLE v+ADDR2
-VARIABLE v+ADDR3
-: v+ ( addr1 addr2 N -- addr3)
-    N ! v+ADDR2 ! v+ADDR1 ! v+ADDR3 N @ 1 - CELLS ALLOT DROP
-    N @ 0 DO v+ADDR1 @ i <- v+ADDR2 @ i <- + v+ADDR3 i -> LOOP v+ADDR3 ;
-VARIABLE v.ADDR
-: v. ( addr1 addr2 N -- n ) DUP N ! v+ v.ADDR ! 0 N @ 0 DO v.ADDR @ i <- + LOOP ;
+: v+ ( addr1 addr2 addr3 N -- addr3) { ADDR1 ADDR2 ADDR3 N }
+    ADDR3 N 1 - CELLS ALLOT
+    N 0 DO ADDR1 i GET ADDR2 i GET + ADDR3 i PUT LOOP ;
+: v. ( addr1 addr2 addr3 N -- n ) { ADDR3 N }
+    ADDR3 N v+ DROP 0 N 0 DO ADDR3 i GET + LOOP ;
 
 \ *** Constants ***
 \ I define non-integer constants as numerator/ /denominator
