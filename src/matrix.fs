@@ -1,15 +1,36 @@
 \ Matrix related functions
-\ Note: Matrices must be in the form [ M N a1,1 ... a1,N ... aM,1 ... aM,N ]
+\ Matrices are stored in the following way:
+\   [ M N row-stride col-stride pointer-to-data ]
+\ and initialised matrices are assumed to be row contiguous.
 
 include math.fs
 
 \ Convience function for matrix properties
-: rows ( addr -- n ) 0 get ;
-: cols ( addr -- n ) 1 get ;
-: m-idx ( addr i j -- idx ) { addr i j } addr cols i * j + 2 + ;
-: m-val ( addr i j -- val ) { addr i j } addr addr i j m-idx get ;
-: m-size ( addr -- n ) { addr } addr rows addr cols * 2 + ;
-: m-init ( addr m n -- ) { addr m n } m n * 1 + cells allot m addr 0 put n addr 1 put ;
+0 constant row-idx
+1 constant col-idx
+2 constant rs-idx
+3 constant cs-idx
+4 constant dat-idx
+: rows ( addr -- n ) row-idx get ;
+: cols ( addr -- n ) col-idx get ;
+: rstride ( addr -- n ) rs-idx get ;
+: cstride ( addr -- n ) cs-idx get ;
+: mdata ( addr1 -- addr2 ) dat-idx get ;
+: mdget ( addr idx -- n ) { addr idx } addr mdata idx get ;
+: mdput ( val addr idx -- n ) { addr idx } addr mdata idx put ;
+: m-idx ( addr i j -- idx ) { addr i j } addr rstride i * addr cstride j * + ;
+: m-val ( addr i j -- val ) { addr i j } addr mdata addr i j m-idx get ;
+: m-store ( n addr i j -- ) { addr i j } addr addr i j m-idx mdput ; 
+: m-size ( addr -- n ) { addr } addr rows addr cols * ;
+: m-init ( addr m n -- ) { addr m n }
+    addr dat-idx cells allot drop
+    m addr row-idx put n addr col-idx put
+    n addr rs-idx put 1 addr cs-idx put \ Assumes row contiguous
+    here addr dat-idx put addr mdata m n * cells allot drop ;
+: m-add-data ( n1 n2 ... nN N addr --- ) { n addr } n 1 + 1 do addr n i - mdput loop ;
+: m-create ( v1 v2 ... vN addr m n --- ) { addr m n }
+    addr m n m-init m n * addr m-add-data ;
+    
 variable .mvi
 variable .mvj
 : .mv ( addr -- ) { addr }
@@ -28,15 +49,17 @@ variable .mvj
 : shape-conform ( addr1 addr2 -- n ) { addr1 addr2 } addr1 cols addr2 rows = ;
 : shape-/conform ( addr1 addr2 -- n ) shape-conform invert ;
 : m= ( addr1 addr2 -- n ) { addr1 addr2 }
-    addr1 addr2 shape= addr1 rows addr1 cols * 2 + 2 do
-        addr1 i get addr2 i get = and
+    addr1 addr2 shape= addr1 rows addr1 cols * 0 do
+        addr1 i mdget addr2 i mdget = and
     loop ;
 
 \ Addition
 : m+ ( addr1 addr2 addr3 -- addr3 ) { addr1 addr2 addr3 }
     addr1 addr2 shape/= if ." Shapes are not equal" exit then
     addr3 addr1 rows addr1 cols m-init
-    addr3 m-size 2 do addr1 i get addr2 i get + addr3 i put loop addr3 ;
+    addr3 m-size 0 do
+        addr1 i mdget addr2 i mdget + addr3 i mdput
+    loop addr3 ;
 \ dot product
 variable m.i  \ i, j and k change depending on the position of the loop
 variable m.j  \ see loop-test for details, so using my own indexes
@@ -49,7 +72,7 @@ variable m.k
             m.k 0! 0 addr1 cols 0 do
                 addr1 m.i @ m.k @ m-val addr2 m.k @ m.j @ m-val * +
                 m.k ++
-            loop addr3 addr3 m.i @ m.j @ m-idx put
+            loop addr3 m.i @ m.j @ m-store
             m.j ++
         loop m.i ++
     loop addr3 ;
@@ -69,19 +92,19 @@ variable m.k
 create test-no 0 ,
 : test-msg ( n -- )
     cr if test-no ? ." Passed." else test-no ? ." Failed." then 1 test-no +! ;
-create test-m1 2 , 3 , 4 , 5 , 6 , 40 , 50 , 60 ,
-create test-m2 2 , 3 , 7 , 8 , 9 , 70 , 80 , 90 ,
-create test-m3 3 , 2 , 4 , 5 , 40 , 50 , 400 , 500 ,
+variable test-m1 4 5 6 40 50 60 test-m1 2 3 m-create
+variable test-m2 7 8 9 70 80 90 test-m2 2 3 m-create
+variable test-m3 4 5 40 50 400 500 test-m3 3 2 m-create
 : test-shape= ( -- ) 1 test-no !
     test-m1 test-m2 shape= test-msg
     test-m1 test-m3 shape= invert test-msg ;
-create test-m1+m2 2 , 3 , 11 , 13 , 15 , 110 , 130 , 150 ,
+variable test-m1+m2 11 13 15 110 130 150 test-m1+m2 2 3 m-create
 variable test-m1+m2-o
 : test-m+ ( -- ) 3 test-no !
     test-m1 test-m2 test-m1+m2-o m+
-    test-m1+m2-o test-m1+m2 m= test-msg;
+    test-m1+m2-o test-m1+m2 m= test-msg ;
 
-create test-m1.m3 2 , 2 , 2616 , 3270 , 26160 , 32700 ,
+variable test-m1.m3 2616 3270 26160 32700 test-m1.m3 2 2 m-create
 variable test-m1.m3-o
 : test-m. ( -- ) 4 test-no !
     test-m1 test-m3 test-m1.m3-o m. test-m1.m3 m= test-msg ;
