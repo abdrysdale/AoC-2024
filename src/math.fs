@@ -8,7 +8,7 @@ include utils.fs
     n1 n2 1 do n1 * loop ;
 
 \ *** Characters *** /
-\ number aligining based on size - prints correct leading 
+\ number aligining based on size - prints correct leading spaces
 : .na ( n1 n2 -- ) { n1 n2 }
     10 n2 ^ n1 <= if exit then
     n2 1 do 10 i ^ n1 > if ."  " then loop n1 . ;
