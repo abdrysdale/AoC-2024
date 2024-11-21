@@ -27,7 +27,7 @@ include math.fs
     n addr rs-idx put 1 addr cs-idx put ( Assumes row contiguous ) ;
 : m-init ( addr m n -- ) { addr m n }
     addr m n m-init-shape
-    here addr dat-idx put addr mdata m n * cells allot drop ;
+    align here addr dat-idx put addr mdata m n * cells allot drop ;
 : m-add-data ( n1 n2 ... nN N addr --- ) { n addr } n 1 + 1 do addr n i - mdput loop ;
 : m-create ( v1 v2 ... vN addr m n --- ) { addr m n }
     addr m n m-init m n * addr m-add-data ;
