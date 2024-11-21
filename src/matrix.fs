@@ -6,10 +6,8 @@
 include math.fs
 
 \ Convience function for matrix properties
-0 constant row-idx
-1 constant col-idx
-2 constant rs-idx
-3 constant cs-idx
+0 constant row-idx 1 constant col-idx
+2 constant rs-idx 3 constant cs-idx
 4 constant dat-idx
 : rows ( addr -- n ) row-idx get ;
 : cols ( addr -- n ) col-idx get ;
