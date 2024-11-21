@@ -20,17 +20,25 @@ include math.fs
 : m-val ( addr i j -- val ) { addr i j } addr mdata addr i j m-idx get ;
 : m-store ( n addr i j -- ) { addr i j } addr addr i j m-idx mdput ; 
 : m-size ( addr -- n ) { addr } addr rows addr cols * ;
-: m-init ( addr m n -- ) { addr m n }
+
+: m-init-shape ( addr m n -- ) { addr m n }
     addr dat-idx cells allot drop
     m addr row-idx put n addr col-idx put
-    n addr rs-idx put 1 addr cs-idx put \ Assumes row contiguous
+    n addr rs-idx put 1 addr cs-idx put ( Assumes row contiguous ) ;
+: m-init ( addr m n -- ) { addr m n }
+    addr m n m-init-shape
     here addr dat-idx put addr mdata m n * cells allot drop ;
 : m-add-data ( n1 n2 ... nN N addr --- ) { n addr } n 1 + 1 do addr n i - mdput loop ;
 : m-create ( v1 v2 ... vN addr m n --- ) { addr m n }
     addr m n m-init m n * addr m-add-data ;
+
+: m-copy ( addr1 addr2 -- ) { addr1 addr2 }
+    addr2 addr1 rows addr1 cols m-init-shape
+    addr1 mdata addr2 dat-idx put ;
     
 variable .mvi
 variable .mvj
+\ Matrix view
 : .mv ( addr -- ) { addr }
     cr .mvi 0! addr rows 0 do
         .mvj 0! addr cols 0 do
@@ -38,6 +46,12 @@ variable .mvj
             .mvj ++
         loop cr .mvi ++
     loop ;
+\ Matrix info 
+: .mi ( addr -- ) { addr }
+    cr ." Shape:  ( " addr rows . ." , " addr cols . ." )"
+    cr ." Stride: ( " addr rstride . ." , " addr cstride . ." )" ;
+\ Matrix info + matrix data
+: .ma ( addr -- ) { addr } addr .mi addr .mv ;
     
 
 \ Shape checking
@@ -47,9 +61,8 @@ variable .mvj
 : shape-conform ( addr1 addr2 -- n ) { addr1 addr2 } addr1 cols addr2 rows = ;
 : shape-/conform ( addr1 addr2 -- n ) shape-conform invert ;
 : m= ( addr1 addr2 -- n ) { addr1 addr2 }
-    addr1 addr2 shape= addr1 rows addr1 cols * 0 do
-        addr1 i mdget addr2 i mdget = and
-    loop ;
+    addr1 addr2 shape=
+    addr1 rows 0 do addr1 cols 0 do addr1 j i m-val addr2 j i m-val = and loop loop ;
 
 \ Addition
 : m+ ( addr1 addr2 addr3 -- addr3 ) { addr1 addr2 addr3 }
@@ -58,7 +71,8 @@ variable .mvj
     addr3 m-size 0 do
         addr1 i mdget addr2 i mdget + addr3 i mdput
     loop addr3 ;
-\ dot product
+
+\ Dot product
 variable m.i  \ i, j and k change depending on the position of the loop
 variable m.j  \ see loop-test for details, so using my own indexes
 variable m.k
@@ -74,6 +88,12 @@ variable m.k
             m.j ++
         loop m.i ++
     loop addr3 ;
+
+\ Transposition
+: swap-vals ( addr idx1 idx2 -- ) { addr idx1 idx2 }
+    addr idx1 get addr idx2 get addr idx1 put addr idx2 put ;
+: m.t ( addr -- addr ) { addr }
+    addr rs-idx cs-idx swap-vals addr row-idx col-idx swap-vals addr ;
 
 \ *** tests *** /
 : loop-test ( -- )
@@ -107,4 +127,14 @@ variable test-m1.m3-o
 : test-m. ( -- ) 4 test-no !
     test-m1 test-m3 test-m1.m3-o m. test-m1.m3 m= test-msg ;
 
-: run-tests ( -- ) test-shape= test-m+ test-m. ;
+variable test-m1-copy
+: test-m-copy ( -- ) 5 test-no !
+    test-m1 test-m1-copy m-copy
+    test-m1 test-m1-copy m= test-msg ;
+
+: test-m.t ( -- ) 6 test-no !
+    test-m1 test-m1-copy m-copy
+    test-m1-copy m.t m.t test-m1 m= test-msg
+    test-m1-copy m.t test-m3 shape= test-msg ;
+
+: run-tests ( -- ) test-shape= test-m+ test-m. test-m-copy test-m.t ;
