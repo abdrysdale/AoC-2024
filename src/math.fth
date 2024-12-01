@@ -1,5 +1,5 @@
 \ mathematics related functions
-include utils.fs
+include utils.fth
 
 \ *** indicies *** /
 : ** ( n -- n ) dup * ;

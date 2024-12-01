@@ -3,7 +3,7 @@
 \   [ M N row-stride col-stride pointer-to-data ]
 \ and initialised matrices are assumed to be row contiguous.
 
-include math.fs
+include math.fth
 
 \ Convience function for matrix properties
 0 constant row-idx 1 constant col-idx
@@ -94,19 +94,28 @@ variable m.k
     addr idx1 get addr idx2 get addr idx1 put addr idx2 put ;
 : m.t ( addr -- addr ) { addr }
     addr rs-idx cs-idx swap-vals addr row-idx col-idx swap-vals addr ;
+: swap-dvals ( addr i1 j1 i2 j2 ) { addr i1 j1 i2 j2 }
+    \ Swaps the data values.
+    addr mdata addr i1 j1 m-idx addr i2 j2 m-idx swap-vals ;
+
+
+\ Sorting
+variable noswaps?
+: m-bubble ( addr n -- addr ) { addr cidx }
+    \ Bubble sort algorithm
+    begin
+        -1 noswaps? !
+        addr rows 1 do
+            addr i 1 - cidx m-val addr i cidx m-val >
+            if addr i 1 - cidx i cidx swap-dvals 0 noswaps? ! then
+        loop
+    noswaps? @ until addr ;
+
+: m-sort ( addr -- addr ) { addr }
+    addr cols 0 do addr i m-bubble loop ;
+    
 
 \ *** tests *** /
-: loop-test ( -- )
-    3 0 do
-        cr ." i" i .
-        6 3 do
-            cr ." i" i . ."  j" j . 
-            9 6 do
-                cr ." i" i . ."  j" j . ."  k" k .
-            loop
-        loop
-    loop ;
-
 create test-no 0 ,
 : test-msg ( n -- )
     cr if test-no ? ." Passed." else test-no ? ." Failed." then 1 test-no +! ;
@@ -137,4 +146,10 @@ variable test-m1-copy
     test-m1-copy m.t m.t test-m1 m= test-msg
     test-m1-copy m.t test-m3 shape= test-msg ;
 
-: run-tests ( -- ) test-shape= test-m+ test-m. test-m-copy test-m.t ;
+variable test-m4 2 8 3 9 1 7 4 6  test-m4 4 2 m-create
+variable test-m4-sorted 1 6 2 7 3 8 4 9 test-m4-sorted 4 2 m-create
+: test-sort ( -- ) 8 test-no !
+    test-m4 0 m-bubble 1 m-bubble
+    test-m4-sorted m= test-msg ;
+
+: run-tests ( -- ) test-shape= test-m+ test-m. test-m-copy test-m.t test-sort ;
