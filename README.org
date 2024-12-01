@@ -1,0 +1,13 @@
+#+title: Advent of Code 2024 in Forth
+
+* What?
+
+An attempt to solve Advent of Code 2024 in Forth - specifically gForth.
+
+* Why?
+
+I have never done any low level systems programming before nor used Forth before creating this repository. It is very far outside my experience and day job which is essential data science in Python. The why is that Forth interested me and I wanted a challenge.
+
+* How?
+
+I plan on slowly building a basic matrix algebra library which I'll then add to and use as the advent of code challenges progress. All the input data is in =src/input= and all of the AoC challenges are in =src/day_*.fth= - every other =.4th= file is part of the /"library"/.
